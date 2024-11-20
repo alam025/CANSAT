@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import folium
-from streamlit_folium import folium_static
+import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
@@ -89,10 +88,6 @@ def main():
                 from { transform: translateX(-100%); opacity: 0; }
                 to { transform: translateX(0); opacity: 1; }
             }
-            button:hover {
-                background-color: #00ff00; /* Change color on hover */
-                transition: background-color 0.3s ease; /* Smooth transition on hover */
-            }
         </style>
     """, unsafe_allow_html=True)
 
@@ -164,21 +159,23 @@ def main():
             <p style='text-align:center; color:white;'>{altitude:.2f} m</p>
         """, unsafe_allow_html=True)
 
-    # OpenStreetMap Section using Folium
-    st.subheader("Real-time OpenStreetMap")
+    # Plotly Map Section using Plotly Express
+    st.subheader("Real-time Plotly Map")
 
-    # Create a Folium map centered on the selected UAV's location
-    m = folium.Map(location=[selected_uav_data['Latitude'], selected_uav_data['Longitude']], zoom_start=15)
+    # Create a Plotly map centered on the selected UAV's location
+    fig_map = px.scatter_mapbox(uav_data,
+                                 lat='Latitude',
+                                 lon='Longitude',
+                                 hover_name='ID',
+                                 size='Altitude (m)',
+                                 color='Status',
+                                 color_continuous_scale=px.colors.cyclical.IceFire,
+                                 zoom=12,
+                                 height=400)
 
-    # Add a marker for UAV location
-    folium.Marker(
-        location=[selected_uav_data['Latitude'], selected_uav_data['Longitude']],
-        popup=f"{selected_uav} Location",
-        icon=folium.Icon(color='blue')
-    ).add_to(m)
-
-    # Render the map in Streamlit using folium_static
-    folium_static(m)
+    fig_map.update_layout(mapbox_style="open-street-map")  
+   
+    st.plotly_chart(fig_map)
 
     # Notifications Section
     st.subheader("Notifications")
